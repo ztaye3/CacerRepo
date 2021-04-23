@@ -44,39 +44,39 @@
 
 # **Package install**
 
-# In[45]:
+# In[ ]:
 
 
-##get_ipython().system(u'sudo apt-get install build-essential swig')
-##get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
-##get_ipython().system(u'pip install auto-sklearn ')
+#get_ipython().system(u'sudo apt-get install build-essential swig')
+#get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
+#get_ipython().system(u'pip install auto-sklearn ')
 
 
-# In[46]:
+# In[ ]:
 
 
-##get_ipython().system(u'pip install pipelineprofiler')
+#get_ipython().system(u'pip install pipelineprofiler')
 
 
-# In[47]:
+# In[ ]:
 
 
-##get_ipython().system(u'pip install shap')
+#get_ipython().system(u'pip install shap')
 
 
-# In[48]:
+# In[ ]:
 
 
-##get_ipython().system(u'pip install --upgrade plotly')
+#get_ipython().system(u'pip install --upgrade plotly')
 
 
-# In[49]:
+# In[ ]:
 
 
-##get_ipython().system(u'pip3 install -U scikit-learn')
+#get_ipython().system(u'pip3 install -U scikit-learn')
 
 
-# In[50]:
+# In[ ]:
 
 
 import pandas as pd
@@ -94,7 +94,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 
 
-# In[51]:
+# In[ ]:
 
 
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder
@@ -109,20 +109,20 @@ import datetime
 
 
 
-# In[52]:
+# In[ ]:
 
 
 import autosklearn.classification
 import PipelineProfiler
 
 
-# In[53]:
+# In[ ]:
 
 
 logging.basicConfig(filename = 'logs.log' , level = logging.INFO)
 
 
-# In[75]:
+# In[ ]:
 
 
 import shap
@@ -132,7 +132,7 @@ from joblib import dump
 
 # Connect to your Google Drive
 
-# In[55]:
+# In[ ]:
 
 
 from google.colab import drive
@@ -141,25 +141,25 @@ drive.mount('/content/drive', force_remount=True)
 
 # Options and settings
 
-# In[56]:
+# In[ ]:
 
 
 data_path = "/content/drive/MyDrive/Introduction2DataScience/data/CancerRepo/data/raw/"
 
 
-# In[57]:
+# In[ ]:
 
 
 model_path = "/content/drive/MyDrive/Introduction2DataScience/data/CancerRepo/models/"
 
 
-# In[58]:
+# In[ ]:
 
 
 timesstr = str(datetime.datetime.now()).replace(' ', '_')
 
 
-# In[59]:
+# In[ ]:
 
 
 logging.basicConfig(filename=f"{model_path}explog_{timesstr}.log", level=logging.INFO)
@@ -171,57 +171,57 @@ logging.basicConfig(filename=f"{model_path}explog_{timesstr}.log", level=logging
 
 # # Loading Data and Train-Test Split
 
-# In[60]:
+# In[ ]:
 
 
 dataset = pd.read_csv(f'{data_path}data-breast-cancer.csv')
 
 
-# In[61]:
+# In[ ]:
 
 
 drop_column = ['id', 'Unnamed: 32']
 dataset.drop(drop_column,axis=1, inplace=True)
 
 
-# In[62]:
+# In[ ]:
 
 
 test_size = 0.2
 random_state = 0
 
 
-# In[63]:
+# In[ ]:
 
 
 train, test = train_test_split(dataset, test_size=test_size, random_state=random_state)
 
 
-# In[64]:
+# In[ ]:
 
 
 logging.info(f'train test split with test_size={test_size} and random state={random_state}')
 
 
-# In[65]:
+# In[ ]:
 
 
 train.to_csv(f'{data_path}CancerTrain.csv', index=False)
 
 
-# In[66]:
+# In[ ]:
 
 
 train= train.copy()
 
 
-# In[67]:
+# In[ ]:
 
 
 test.to_csv(f'{data_path}CancerTest.csv', index=False)
 
 
-# In[68]:
+# In[ ]:
 
 
 test = test.copy()
@@ -229,20 +229,20 @@ test = test.copy()
 
 # # Modelling
 
-# In[69]:
+# In[ ]:
 
 
 X_train, y_train = dataset.drop('diagnosis',axis=1), dataset.diagnosis 
 
 
-# In[70]:
+# In[ ]:
 
 
 total_time = 600
 per_run_time_limit = 30
 
 
-# In[71]:
+# In[ ]:
 
 
 le = preprocessing.LabelEncoder()
@@ -250,7 +250,7 @@ le.fit(y_train)
 y_train = le.transform(y_train)
 
 
-# In[72]:
+# In[ ]:
 
 
 automl = autosklearn.classification.AutoSklearnClassifier(
@@ -259,25 +259,25 @@ automl = autosklearn.classification.AutoSklearnClassifier(
 )
 
 
-# In[73]:
+# In[ ]:
 
 
 automl.fit(X_train, y_train)
 
 
-# In[76]:
+# In[ ]:
 
 
 dump(automl, f'{model_path}model{timesstr}.pkl')
 
 
-# In[77]:
+# In[ ]:
 
 
 logging.info(f'Saved classifier model at {model_path}model{timesstr}.pkl ')
 
 
-# In[78]:
+# In[ ]:
 
 
 logging.info(f'autosklearn model statistics:')
@@ -293,13 +293,13 @@ logging.info(automl.sprint_statistics())
 
 # # Model Evluation and Explainability
 
-# In[81]:
+# In[ ]:
 
 
 X_test, y_test = test.drop('diagnosis',axis=1), test.diagnosis 
 
 
-# In[84]:
+# In[ ]:
 
 
 le = preprocessing.LabelEncoder()
@@ -309,73 +309,52 @@ y_test = le.transform(y_test)
 
 # # Model Evaluation
 
-# In[85]:
+# In[ ]:
 
 
 y_pred = automl.predict(X_test)
 
 
-# In[86]:
+# In[ ]:
 
 
 logging.info(f"Mean Squared Error is {mean_squared_error(y_test, y_pred)}, \n R2 score is {automl.score(X_test, y_test)}")
 
 
-# In[89]:
-
-
-dataset = pd.DataFrame(np.concatenate((X_test, y_test.reshape(-1,1), y_pred.reshape(-1,1)),  axis=1))
-
-
 # In[ ]:
 
 
-# dataset.columns = ['longitude', 'latitude', 'housing_median_age', 'households',
-#                'median_income', 'bedroom_per_room',
-#                'rooms_per_household', 'population_per_household', 'True Target', 'Predicted Target']
-
-
-# In[ ]:
-
-
-# fig = px.scatter(df, x='Predicted Target', y='True Target')
-# fig.write_html(f"{model_path}residualfig_{timesstr}.html")
-
-
-# In[ ]:
-
-
-# logging.info(f"Figure of residuals saved as {model_path}residualfig_{timesstr}.html")
+logging.info(f"Figure of residuals saved as {model_path}residualfig_{timesstr}.html")
 
 
 # # Model Explanablity
 
-# In[90]:
+# In[ ]:
 
 
-explainer = shap.KernelExplainer(model = automl.predict, data = X_test.iloc[:50, :], link = "identity")
+#explainer = shap.KernelExplainer(model = automl.predict, data = X_test.iloc[:50, :], link = "identity")
 
 
-# In[91]:
+# In[ ]:
 
 
 # Set the index of the specific example to explain
-X_idx = 0
-shap_value_single = explainer.shap_values(X = X_test.iloc[X_idx:X_idx+1,:], nsamples = 100)
-X_test.iloc[X_idx:X_idx+1,:]
+#X_idx = 0
+#shap_value_single = explainer.shap_values(X = X_test.iloc[X_idx:X_idx+1,:], nsamples = 100)
+#X_test.iloc[X_idx:X_idx+1,:]
 # print the JS visualization code to the notebook
 #shap.initjs()
 #shap.force_plot(base_value = explainer.expected_value,
-#                shap_values = shap_value_single,
- #               features = X_test.iloc[X_idx:X_idx+1,:], 
-   #             show=False, matplotlib=True
-             
-    #            )
+ #               shap_values = shap_value_single,
+  #              features = X_test.iloc[X_idx:X_idx+1,:], 
+   #             show=False,
+    #            matplotlib=True
+     #           )
 #plt.savefig(f"{model_path}shap_example_{timesstr}.png")
 #logging.info(f"Shapley example saved as {model_path}shap_example_{timesstr}.png")
 
 
-# In[92]:
+# In[ ]:
 
 
 #shap_values = explainer.shap_values(X = X_test.iloc[0:50,:], nsamples = 100)
@@ -386,7 +365,9 @@ X_test.iloc[X_idx:X_idx+1,:]
 
 # print the JS visualization code to the notebook
 #shap.initjs()
-#fig = shap.summary_plot(shap_values = shap_values,       features = X_test.iloc[0:50,:],         show=False)
+#fig = shap.summary_plot(shap_values = shap_values,
+#                  features = X_test.iloc[0:50,:],
+ #                 show=False)
 #plt.savefig(f"{model_path}shap_summary_{timesstr}.png")
 #logging.info(f"Shapley summary saved as {model_path}shap_summary_{timesstr}.png")
 

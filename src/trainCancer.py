@@ -47,33 +47,33 @@
 # In[ ]:
 
 
-#get_ipython().system(u'sudo apt-get install build-essential swig')
-#get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
-#get_ipython().system(u'pip install auto-sklearn ')
+get_ipython().system(u'sudo apt-get install build-essential swig')
+get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
+get_ipython().system(u'pip install auto-sklearn ')
 
 
 # In[ ]:
 
 
-#get_ipython().system(u'pip install pipelineprofiler')
+get_ipython().system(u'pip install pipelineprofiler')
 
 
 # In[ ]:
 
 
-#get_ipython().system(u'pip install shap')
+get_ipython().system(u'pip install shap')
 
 
 # In[ ]:
 
 
-#get_ipython().system(u'pip install --upgrade plotly')
+get_ipython().system(u'pip install --upgrade plotly')
 
 
 # In[ ]:
 
 
-#get_ipython().system(u'pip3 install -U scikit-learn')
+get_ipython().system(u'pip3 install -U scikit-learn')
 
 
 # In[ ]:
@@ -287,8 +287,8 @@ logging.info(automl.sprint_statistics())
 # In[ ]:
 
 
-#profiler_data= PipelineProfiler.import_autosklearn(automl)
-#PipelineProfiler.plot_pipeline_matrix(profiler_data)
+profiler_data= PipelineProfiler.import_autosklearn(automl)
+PipelineProfiler.plot_pipeline_matrix(profiler_data)
 
 
 # # Model Evluation and Explainability
@@ -332,44 +332,44 @@ logging.info(f"Figure of residuals saved as {model_path}residualfig_{timesstr}.h
 # In[ ]:
 
 
-#explainer = shap.KernelExplainer(model = automl.predict, data = X_test.iloc[:50, :], link = "identity")
+explainer = shap.KernelExplainer(model = automl.predict, data = X_test.iloc[:50, :], link = "identity")
 
 
 # In[ ]:
 
 
 # Set the index of the specific example to explain
-#X_idx = 0
-#shap_value_single = explainer.shap_values(X = X_test.iloc[X_idx:X_idx+1,:], nsamples = 100)
-#X_test.iloc[X_idx:X_idx+1,:]
+X_idx = 0
+shap_value_single = explainer.shap_values(X = X_test.iloc[X_idx:X_idx+1,:], nsamples = 100)
+X_test.iloc[X_idx:X_idx+1,:]
 # print the JS visualization code to the notebook
-#shap.initjs()
-#shap.force_plot(base_value = explainer.expected_value,
- #               shap_values = shap_value_single,
-  #              features = X_test.iloc[X_idx:X_idx+1,:], 
-   #             show=False,
-    #            matplotlib=True
-     #           )
-#plt.savefig(f"{model_path}shap_example_{timesstr}.png")
-#logging.info(f"Shapley example saved as {model_path}shap_example_{timesstr}.png")
+shap.initjs()
+shap.force_plot(base_value = explainer.expected_value,
+                shap_values = shap_value_single,
+                features = X_test.iloc[X_idx:X_idx+1,:], 
+                show=False,
+                matplotlib=True
+                )
+plt.savefig(f"{model_path}shap_example_{timesstr}.png")
+logging.info(f"Shapley example saved as {model_path}shap_example_{timesstr}.png")
 
 
 # In[ ]:
 
 
-#shap_values = explainer.shap_values(X = X_test.iloc[0:50,:], nsamples = 100)
+shap_values = explainer.shap_values(X = X_test.iloc[0:50,:], nsamples = 100)
 
 
 # In[ ]:
 
 
 # print the JS visualization code to the notebook
-#shap.initjs()
-#fig = shap.summary_plot(shap_values = shap_values,
-#                  features = X_test.iloc[0:50,:],
- #                 show=False)
-#plt.savefig(f"{model_path}shap_summary_{timesstr}.png")
-#logging.info(f"Shapley summary saved as {model_path}shap_summary_{timesstr}.png")
+shap.initjs()
+fig = shap.summary_plot(shap_values = shap_values,
+                  features = X_test.iloc[0:50,:],
+                  show=False)
+plt.savefig(f"{model_path}shap_summary_{timesstr}.png")
+logging.info(f"Shapley summary saved as {model_path}shap_summary_{timesstr}.png")
 
 
 # --------------

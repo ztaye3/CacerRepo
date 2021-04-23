@@ -29,63 +29,59 @@
 #         <a style="color:#00BAE5" href="https://colab.research.google.com/drive/17X_OTM8Zqg-r4XEakCxwU6VN1OsJpHh7?usp=sharing" title="momentum"> Assignment, Classification of breast cancer cells</a>
 # </strong></nav>
 
+# **Team Members:** 
+# 
+# *   Zekarias Taye Hirpo
+# *   Agbeyeye Koffi Ledi
+# *   Mohit Kumar Bassak
+# 
+# 
+# 
+# 
+
 # <a id='SU' name="SU"></a>
 # ## [Set up](#P0)
 
 # **Package install**
 
-# In[ ]:
+# In[45]:
 
 
-#get_ipython().system(u'sudo apt-get install cookiecutter')
-#get_ipython().system(u'pip install gdown')
-#get_ipython().system(u'pip install dvc')
-#get_ipython().system(u"pip install 'dvc[gdrive]'")
+##get_ipython().system(u'sudo apt-get install build-essential swig')
+##get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
+##get_ipython().system(u'pip install auto-sklearn ')
 
 
-# In[ ]:
+# In[46]:
 
 
-#get_ipython().system(u'sudo apt-get install build-essential swig')
-#get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
-#get_ipython().system(u'pip install auto-sklearn==0.12.5')
+##get_ipython().system(u'pip install pipelineprofiler')
 
 
-# In[ ]:
+# In[47]:
 
 
-#get_ipython().system(u'pip install joblib')
+##get_ipython().system(u'pip install shap')
 
 
-# In[ ]:
+# In[48]:
 
 
-#get_ipython().system(u'pip install pipelineprofiler')
+##get_ipython().system(u'pip install --upgrade plotly')
 
 
-# In[ ]:
+# In[49]:
 
 
-#get_ipython().system(u'pip install shap')
+##get_ipython().system(u'pip3 install -U scikit-learn')
 
 
-# In[ ]:
-
-
-#get_ipython().system(u'pip install --upgrade plotly')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'pip3 install -U scikit-learn')
-
-
-# In[ ]:
+# In[50]:
 
 
 import pandas as pd
 import numpy as np
+import logging
 from sklearn.model_selection import train_test_split, cross_val_score
 from pandas_profiling import ProfileReport
 import matplotlib.pyplot as plt
@@ -96,11 +92,9 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import plotly.express as px
 from plotly.subplots import make_subplots
-import logging
-import joblib
 
 
-# In[ ]:
+# In[51]:
 
 
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder
@@ -111,481 +105,290 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn import preprocessing
+import datetime
 
 
-# In[ ]:
+
+# In[52]:
 
 
 import autosklearn.classification
 import PipelineProfiler
 
 
-# In[ ]:
+# In[53]:
 
 
 logging.basicConfig(filename = 'logs.log' , level = logging.INFO)
 
 
-# In[ ]:
+# In[75]:
 
 
 import shap
+from sklearn.metrics import mean_squared_error
+from joblib import dump
 
 
 # Connect to your Google Drive
 
-# In[ ]:
+# In[55]:
 
 
 from google.colab import drive
 drive.mount('/content/drive', force_remount=True)
 
 
-# In[ ]:
+# Options and settings
+
+# In[56]:
 
 
-data_path = "/content/drive/MyDrive/Introduction2DataScience/data/"
+data_path = "/content/drive/MyDrive/Introduction2DataScience/data/CancerRepo/data/raw/"
 
 
-# In[ ]:
+# In[57]:
 
 
-pd.set_option('display.max_rows', 20)
+model_path = "/content/drive/MyDrive/Introduction2DataScience/data/CancerRepo/models/"
 
 
-# In[ ]:
+# In[58]:
 
 
-set_config(display='diagram')
+timesstr = str(datetime.datetime.now()).replace(' ', '_')
 
 
-# In[ ]:
+# In[59]:
 
 
-#get_ipython().magic(u'matplotlib inline')
+logging.basicConfig(filename=f"{model_path}explog_{timesstr}.log", level=logging.INFO)
 
 
-# _Your Comments here_
+# **Observation:** Those are the necessary packages and resources we should import before proceeding to data anlysis.
 
-# ### Data Structure and types
+# Please Download the data from [this source](https://drive.google.com/file/d/1af2YyHIp__OdpuUeOZFwmwOvCsS0Arla/view?usp=sharing), and upload it on your introduction2DS/data google drive folder.
 
-# **Load the csv file as a DataFrame using Pandas**
+# # Loading Data and Train-Test Split
 
-# In[ ]:
+# In[60]:
 
 
 dataset = pd.read_csv(f'{data_path}data-breast-cancer.csv')
 
 
-# In[ ]:
+# In[61]:
 
 
-logging.info("Read the dataset")
+drop_column = ['id', 'Unnamed: 32']
+dataset.drop(drop_column,axis=1, inplace=True)
 
 
-# **Observation:**
-# 
-# 1.   Drop column 'Unnamed: 32' since it's all values are empty:
-# 2.   Drop column 'Id' since it doesn't contain a specific information about the cancer cell.
-
-# In[ ]:
+# In[62]:
 
 
-drop_column = ['id','diagnosis']
+test_size = 0.2
+random_state = 0
 
 
-# In[ ]:
+# In[63]:
 
 
-X = dataset.drop(drop_column , axis = 1)
-y = dataset.diagnosis
-num_variables = ['radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean',
-       'smoothness_mean', 'compactness_mean', 'concavity_mean',
-       'concave points_mean', 'symmetry_mean', 'fractal_dimension_mean',
-       'radius_se', 'texture_se', 'perimeter_se', 'area_se', 'smoothness_se',
-       'compactness_se', 'concavity_se', 'concave points_se', 'symmetry_se',
-       'fractal_dimension_se', 'radius_worst', 'texture_worst',
-       'perimeter_worst', 'area_worst', 'smoothness_worst',
-       'compactness_worst', 'concavity_worst', 'concave points_worst',
-       'symmetry_worst', 'fractal_dimension_worst']
+train, test = train_test_split(dataset, test_size=test_size, random_state=random_state)
 
 
-# 
-# _Your Comments here_
-
-# We now can do the test:train split
-
-# In[ ]:
+# In[64]:
 
 
-X_train, X_test, y_train, y_test = train_test_split(X, # original dataframe to be split
-                                                     y,
-                                                     test_size=0.2, # proportion of the rows to put in the test set
-                                                     stratify=y,
-                                                     random_state=42) # for reproducibility (see explanation below)
+logging.info(f'train test split with test_size={test_size} and random state={random_state}')
 
 
-# In[ ]:
+# In[65]:
 
 
-logging.info("Successfully divided data into training and testing set")
+train.to_csv(f'{data_path}CancerTrain.csv', index=False)
 
 
-# ### Pipeline Definition
-
-# In[ ]:
+# In[66]:
 
 
-numeric_transformer = Pipeline(steps=[('imputer', SimpleImputer(strategy='constant', fill_value=0)),
-                                      ('scaler', StandardScaler())])
+train= train.copy()
 
 
-# In[ ]:
+# In[67]:
 
 
-ohe_transformer = OneHotEncoder(handle_unknown='ignore')
+test.to_csv(f'{data_path}CancerTest.csv', index=False)
 
 
-# In[ ]:
+# In[68]:
 
 
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, num_variables)
-        ])
+test = test.copy()
 
 
-# In[ ]:
+# # Modelling
+
+# In[69]:
 
 
-classification_model = Pipeline(steps=[('preprocessor', preprocessor),
-                                          ('classifier', LogisticRegression())])
+X_train, y_train = dataset.drop('diagnosis',axis=1), dataset.diagnosis 
 
 
-# In[ ]:
+# In[70]:
 
 
-classification_model
+total_time = 600
+per_run_time_limit = 30
 
 
-# In[ ]:
-
-
-logging.info("Model prepared")
-
-
-# _Your Comments here_
-
-# ### Model Training
-
-# In[ ]:
-
-
-classification_model.fit(X_train, y_train)
-
-
-# In[ ]:
-
-
-col_names = num_variables.copy()
-
-
-# In[ ]:
-
-
-X_train_encoded = pd.DataFrame(classification_model['preprocessor'].transform(X_train), columns=col_names)
-
-
-# Encode feature 'diagnosis' with label encoder
-
-# In[ ]:
+# In[71]:
 
 
 le = preprocessing.LabelEncoder()
-le.fit(y)
-y_train_encoded = le.transform(y_train)
+le.fit(y_train)
+y_train = le.transform(y_train)
 
 
-# In[ ]:
+# In[72]:
 
 
 automl = autosklearn.classification.AutoSklearnClassifier(
-    time_left_for_this_task=60,
+    time_left_for_this_task=600,
     per_run_time_limit=30,
 )
 
 
-# In[ ]:
+# In[73]:
 
 
-automl.fit(X_train_encoded, y_train_encoded)
+automl.fit(X_train, y_train)
 
 
-# In[ ]:
+# In[76]:
 
 
-profiler_data= PipelineProfiler.import_autosklearn(automl)
-PipelineProfiler.plot_pipeline_matrix(profiler_data)
+dump(automl, f'{model_path}model{timesstr}.pkl')
 
 
-# In[ ]:
+# In[77]:
 
 
-profiler_data= PipelineProfiler.import_autosklearn(automl)
-PipelineProfiler.plot_pipeline_matrix(profiler_data)
+logging.info(f'Saved classifier model at {model_path}model{timesstr}.pkl ')
 
 
-# In[ ]:
+# In[78]:
 
 
-logging.info("Model finally trained")
-
-
-# Now, we save the trained model using joblib.
-
-# In[ ]:
-
-
-joblib.dump(classification_model , "mlmodel")
+logging.info(f'autosklearn model statistics:')
+logging.info(automl.sprint_statistics())
 
 
 # In[ ]:
 
 
-logging.info("Model finally dumped")
+#profiler_data= PipelineProfiler.import_autosklearn(automl)
+#PipelineProfiler.plot_pipeline_matrix(profiler_data)
 
 
-# ### Model Evaluation
+# # Model Evluation and Explainability
+
+# In[81]:
+
+
+X_test, y_test = test.drop('diagnosis',axis=1), test.diagnosis 
+
+
+# In[84]:
+
+
+le = preprocessing.LabelEncoder()
+le.fit(y_test)
+y_test = le.transform(y_test)
+
+
+# # Model Evaluation
+
+# In[85]:
+
+
+y_pred = automl.predict(X_test)
+
+
+# In[86]:
+
+
+logging.info(f"Mean Squared Error is {mean_squared_error(y_test, y_pred)}, \n R2 score is {automl.score(X_test, y_test)}")
+
+
+# In[89]:
+
+
+dataset = pd.DataFrame(np.concatenate((X_test, y_test.reshape(-1,1), y_pred.reshape(-1,1)),  axis=1))
+
+
+# In[ ]:
+
+
+# dataset.columns = ['longitude', 'latitude', 'housing_median_age', 'households',
+#                'median_income', 'bedroom_per_room',
+#                'rooms_per_household', 'population_per_household', 'True Target', 'Predicted Target']
+
 
 # In[ ]:
 
 
-# your code here
+# fig = px.scatter(df, x='Predicted Target', y='True Target')
+# fig.write_html(f"{model_path}residualfig_{timesstr}.html")
 
 
 # In[ ]:
 
 
-X_test_encoded = pd.DataFrame(classification_model['preprocessor'].transform(X_test), columns=col_names)
+# logging.info(f"Figure of residuals saved as {model_path}residualfig_{timesstr}.html")
 
 
-# In[ ]:
+# # Model Explanablity
+
+# In[90]:
 
 
-y_pred = automl.predict(X_test_encoded)
+explainer = shap.KernelExplainer(model = automl.predict, data = X_test.iloc[:50, :], link = "identity")
 
 
-# In[ ]:
-
-
-y_test_encoded = le.transform(y_test)
-
-
-# In[ ]:
-
-
-confusion_matrix(y_test_encoded,y_pred)
-
-
-# In[ ]:
-
-
-ConfusionMatrixDisplay(confusion_matrix(y_test_encoded,y_pred))
-
-
-# In[ ]:
-
-
-explainer = shap.KernelExplainer(model = automl.predict, data = X_test_encoded.iloc[:50, :], link = "identity")
-
-
-# In[ ]:
+# In[91]:
 
 
 # Set the index of the specific example to explain
 X_idx = 0
-shap_value_single = explainer.shap_values(X = X_test_encoded.iloc[X_idx:X_idx+1,:], nsamples = 100)
+shap_value_single = explainer.shap_values(X = X_test.iloc[X_idx:X_idx+1,:], nsamples = 100)
 X_test.iloc[X_idx:X_idx+1,:]
 # print the JS visualization code to the notebook
-shap.initjs()
-shap.force_plot(base_value = explainer.expected_value,
-                shap_values = shap_value_single,
-                features = X_test_encoded.iloc[X_idx:X_idx+1,:]
-                )
+#shap.initjs()
+#shap.force_plot(base_value = explainer.expected_value,
+#                shap_values = shap_value_single,
+ #               features = X_test.iloc[X_idx:X_idx+1,:], 
+   #             show=False, matplotlib=True
+             
+    #            )
+#plt.savefig(f"{model_path}shap_example_{timesstr}.png")
+#logging.info(f"Shapley example saved as {model_path}shap_example_{timesstr}.png")
 
 
-# In[ ]:
+# In[92]:
 
 
-shap_values = explainer.shap_values(X = X_test_encoded.iloc[0:50,:], nsamples = 100)
+#shap_values = explainer.shap_values(X = X_test.iloc[0:50,:], nsamples = 100)
 
 
 # In[ ]:
 
 
 # print the JS visualization code to the notebook
-shap.initjs()
-fig = shap.summary_plot(shap_values = shap_values,
-                  features = X_test_encoded.iloc[0:50,:]
-                  )
-plt.savefig(f"shap_summary.png")
-
-
-# In[ ]:
-
-
-logging.info("Model evaluated")
-
-
-# # Create a cookiecutter data science project directory in your google drive and track its evolution using git,
-
-# Mount drive:
-
-# In[ ]:
-
-
-from google.colab import drive
-
-drive.mount('/content/drive', force_remount=True)
-
-
-#  Move to the directory of the data:
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd /content/drive/MyDrive/Introduction2DataScience/data')
-
-
-# Open project with following parameters:
-# 
-# > Indented block
-# project_name [project_name]: cancer
-# repo_name [cancer]: CancerRepo
-# author_name [Your name (or your organization/company/team)]: ztaye3@gmail.com
-# 
-# 
-
-# In[ ]:
-
-
-#get_ipython().system(u'cookiecutter https://github.com/drivendata/cookiecutter-data-sciences')
-
-
-# Let's checkout its structure:
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd CancerRepo')
-#get_ipython().system(u'ls')
-
-
-# **Track code using git:**
-
-# In[ ]:
-
-
-#get_ipython().system(u'git init')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'git add .')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'git config --global user.email "ztaye3@gmail.com"')
-#get_ipython().system(u'git config --global user.name "ztaye"')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'git status')
-
-
-# In[ ]:
-
-
-# !git commit -m "cookiecutter data science project structure"
-
-
-# # Place your raw data and your machine learning notebooks in the dedicated folders
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd data/raw')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'gdown https://drive.google.com/uc?id=1af2YyHIp__OdpuUeOZFwmwOvCsS0Arla')
-
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd ../../notebooks/')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'gdown https://drive.google.com/uc?id=15Ehfd97f7yTft_GT3GXsz3ZDSDS_dGYf')
-
-
-# # Convert your notebook into a python script and place it in the dedicated folder
-
-# _Your Comments here_
-
-# **Convert Notebook to script**
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd /content/drive/My Drive/Introduction2DataScience/data/CancerRepo/notebooks')
-
-
-# In[ ]:
-
-
-#get_ipython().system(u'jupyter nbconvert --to script --output ../src/train SIT_W2D2_HT2_Model_Development.ipynb --to python')
-
-
-# In[ ]:
-
-
-#get_ipython().magic(u'cd /content/drive/My Drive/Introduction2DataScience/data/CancerRepo/src/')
-
-
-# # Modify the python script and execute it from the command line (use !python myscript.py in another notebook)
-
-# Install script dependecies
-
-# In[ ]:
-
-
-#get_ipython().system(u'sudo apt-get install build-essential swig')
-#get_ipython().system(u'curl https://raw.githubusercontent.com/automl/auto-sklearn/master/requirements.txt | xargs -n 1 -L 1 pip install')
-#get_ipython().system(u'pip install auto-sklearn')
-#get_ipython().system(u'pip install pipelineprofiler # visualize the pipelines created by auto-sklearn')
-#get_ipython().system(u'pip install shap')
-#get_ipython().system(u'pip install --upgrade plotly')
-#get_ipython().system(u'pip3 install -U scikit-learn')
-
-
-# Execute the script:
-
-# In[ ]:
-
-
-#get_ipython().system(u'python train.py ')
+#shap.initjs()
+#fig = shap.summary_plot(shap_values = shap_values,       features = X_test.iloc[0:50,:],         show=False)
+#plt.savefig(f"{model_path}shap_summary_{timesstr}.png")
+#logging.info(f"Shapley summary saved as {model_path}shap_summary_{timesstr}.png")
 
 
 # --------------
